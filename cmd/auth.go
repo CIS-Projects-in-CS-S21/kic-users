@@ -14,11 +14,22 @@ type AuthServer struct {
 
 }
 
-type DataBase interface {
+type User struct {
+	username string
+	password string
 }
 
-func (s* AuthServer) Check(ctx context.Context, req *CheckRequest) (*CheckResponse, error) {
+type DataBase interface {
+	CheckUser(user *User) (bool, error)
+}
 
+func (s* AuthServer) Check(ctx context.Context, req *authv3.CheckRequest) (*authv3.CheckResponse, error) {
+	c := authv3.CheckResponse{}
+	return &c, nil
+}
+
+func(user *User) CheckUser() (bool, error) {
+	return true,nil
 }
 
 
