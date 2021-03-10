@@ -17,5 +17,6 @@ require (
 	google.golang.org/genproto v0.0.0-20201214200347-8c77b98c765d
 	google.golang.org/grpc v1.36.0
 	google.golang.org/protobuf v1.25.0
+	gorm.io/gorm v1.21.3
 	honnef.co/go/tools v0.0.1-2020.1.4 // indirect
 )
