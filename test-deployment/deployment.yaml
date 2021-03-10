@@ -7,7 +7,7 @@ spec:
   ports:
     - port: 50051
       targetPort: 50051
-      name: grpc
+      name: grpc-web
   selector:
     app: test-kic-users
 ---
