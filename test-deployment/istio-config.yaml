@@ -1,0 +1,21 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  namespace: kic
+  name: test-users-virtual-service
+spec:
+  hosts:
+    - "test.api.keeping-it-casual.com"
+  gateways:
+    - kic-gateway
+  http:
+    - match:
+        - uri:
+            prefix: /kic.users.Users
+          port: 50051
+      route:
+        - destination:
+            host: test-kic-users-service
+            port:
+              number: 50051
+
