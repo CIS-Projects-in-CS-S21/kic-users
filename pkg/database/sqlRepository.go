@@ -61,7 +61,8 @@ func (s *SQLRepository) AddUser(ctx context.Context, user *UserModel) (int64, []
 	return -1, errors
 }
 
-func (s *SQLRepository) GetUser(context.Context, *UserModel) (*UserModel, error) {
+func (s *SQLRepository) GetUser(ctx context.Context, user *UserModel) (*UserModel, error) {
+
 	return nil, nil
 }
 
