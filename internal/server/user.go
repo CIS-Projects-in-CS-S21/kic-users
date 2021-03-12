@@ -4,6 +4,7 @@ import (
 	"context"
 	pbcommon "github.com/kic/users/pkg/proto/common"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 
 	"go.uber.org/zap"
 
@@ -68,8 +69,36 @@ func (s *UsersService) AddUser(ctx context.Context, req *pbusers.AddUserRequest)
 	return resp, nil
 }
 
-func (s *UsersService) GetUserByUsername(context.Context, *pbusers.GetUserByUsernameRequest) (*pbusers.GetUserByUsernameResponse, error) {
-	return nil, nil
+func (s *UsersService) GetUserByUsername(ctx context.Context, req *pbusers.GetUserByUsernameRequest) (*pbusers.GetUserByUsernameResponse, error) {
+	model := &database.UserModel{
+		Model:    gorm.Model{},
+		Email:    "",
+		Username: req.Username,
+		Password: "",
+		Birthday: nil,
+		City:     "",
+	}
+
+	user, err := s.db.GetUser(ctx, model)
+
+	if err != nil {
+		return &pbusers.GetUserByUsernameResponse{
+			Success: false,
+			User:    nil,
+			Errors:  nil,
+		}, err
+	}
+
+	resp := &pbusers.GetUserByUsernameResponse{
+		Success: false,
+		User:    &pbcommon.User{
+			UserID:   int64(user.ID),
+			UserName: model.Username,
+			Email:    model.Email,
+		},
+		Errors:  nil,
+	}
+	return resp, err
 }
 
 func (s *UsersService) GetUserByID(context.Context, *pbusers.GetUserByIDRequest) (*pbusers.GetUserByIDResponse, error) {
