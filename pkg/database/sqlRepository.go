@@ -62,12 +62,19 @@ func (s *SQLRepository) AddUser(ctx context.Context, user *UserModel) (int64, []
 }
 
 func (s *SQLRepository) GetUser(ctx context.Context, user *UserModel) (*UserModel, error) {
-
 	return nil, nil
 }
 
-func (s *SQLRepository) DeleteUserByID(context.Context, int64) error {
-	return nil
+func (s *SQLRepository) GetUserByID(ctx context.Context, id int64) (*UserModel, error) {
+	toReturn := &UserModel{}
+	transaction := s.db.First(&toReturn, id)
+
+	return toReturn, transaction.Error
+}
+
+func (s *SQLRepository) DeleteUserByID(ctx context.Context, userID int64) error {
+	transaction := s.db.Delete(&UserModel{}, userID)
+	return transaction.Error
 }
 
 func (s *SQLRepository) UpdateUserInfo(context.Context, *UserModel) error {

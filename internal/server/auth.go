@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"os"
 	"strconv"
 	"time"
 
@@ -13,7 +12,6 @@ import (
 	"github.com/gogo/googleapis/google/rpc"
 	"github.com/kic/users/pkg/database"
 	"github.com/lestrrat-go/jwx/jwa"
-	"github.com/lestrrat-go/jwx/jwk"
 	"github.com/lestrrat-go/jwx/jwt"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/genproto/googleapis/rpc/status"
@@ -25,21 +23,10 @@ const (
 )
 
 func (s *UsersService) DecodeJWT(payload string) (jwt.Token, error) {
-	secretKey := os.Getenv("SECRET_KEY")
-	raw := []byte(secretKey)
-
-	jkey, err := jwk.New(raw)
-
-	if err != nil {
-		return nil, err
-	}
-	keyset := jwk.NewSet()
-	keyset.Add(jkey)
-
 	token, err := jwt.Parse(
 		[]byte(payload),
 		// Tell the parser that you want to use this keyset
-		jwt.WithKeySet(keyset),
+		jwt.WithKeySet(s.keyset),
 		jwt.UseDefaultKey(true),
 	)
 
@@ -47,17 +34,8 @@ func (s *UsersService) DecodeJWT(payload string) (jwt.Token, error) {
 }
 
 func (s *UsersService) GenerateJWT(userID int64) (string, error) {
-	secretKey := os.Getenv("SECRET_KEY")
-	raw := []byte(secretKey)
-
-	jkey, err := jwk.New(raw)
-
-	if err != nil {
-		return "", err
-	}
-
 	t := jwt.New()
-	err = t.Set(jwt.ExpirationKey, time.Now().Add(time.Hour))
+	err := t.Set(jwt.ExpirationKey, time.Now().Add(time.Hour))
 	if err != nil {
 		return "", err
 	}
@@ -67,7 +45,9 @@ func (s *UsersService) GenerateJWT(userID int64) (string, error) {
 		return "", err
 	}
 
-	signed, err := jwt.Sign(t, jwa.HS256, jkey)
+	key, _ := s.keyset.Get(0)
+
+	signed, err := jwt.Sign(t, jwa.HS256, key)
 
 	if err != nil {
 		return "", err
