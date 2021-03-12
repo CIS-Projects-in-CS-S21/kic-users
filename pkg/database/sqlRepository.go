@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+
 	pbusers "github.com/kic/users/pkg/proto/users"
 
 	"go.uber.org/zap"
@@ -9,12 +10,12 @@ import (
 )
 
 type SQLRepository struct {
-	db gorm.DB
+	db *gorm.DB
 
 	logger *zap.SugaredLogger
 }
 
-func NewSQLRepository(db gorm.DB, logger *zap.SugaredLogger) *SQLRepository {
+func NewSQLRepository(db *gorm.DB, logger *zap.SugaredLogger) *SQLRepository {
 	return &SQLRepository{
 		db:     db,
 		logger: logger,

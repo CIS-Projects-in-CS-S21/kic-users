@@ -1,0 +1,3 @@
+resources:
+  - deployment/deployment.yaml
+  - deployment/istio-config.yaml

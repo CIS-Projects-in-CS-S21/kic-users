@@ -5,6 +5,7 @@ import (
 	pbcommon "github.com/kic/users/pkg/proto/common"
 	"github.com/lestrrat-go/jwx/jwk"
 	"golang.org/x/crypto/bcrypt"
+	"time"
 
 	"gorm.io/gorm"
 	"google.golang.org/grpc/codes"
@@ -85,13 +86,7 @@ func (s *UsersService) AddUser(ctx context.Context, req *pbusers.AddUserRequest)
 		return nil, err
 	}
 
-	model := &database.UserModel{
-		Email:    req.Email,
-		Username: req.DesiredUsername,
-		Password: string(hashedPassword),
-		Birthday: req.Birthday,
-		City:     req.City,
-	}
+	model := database.NewUserModel(req.Email, req.DesiredUsername, string(hashedPassword), req.City, req.Birthday)
 
 	id, insertErrors := s.db.AddUser(context.TODO(), model)
 
@@ -121,7 +116,7 @@ func (s *UsersService) GetUserByUsername(ctx context.Context, req *pbusers.GetUs
 		Email:    "",
 		Username: req.Username,
 		Password: "",
-		Birthday: nil,
+		Birthday: time.Time{},
 		City:     "",
 	}
 
