@@ -11,6 +11,7 @@ type Repository interface {
 	AddUser(context.Context, *UserModel) (int64, []pbusers.AddUserError)
 	// Provide any info you can to get a user
 	GetUser(context.Context, *UserModel) (*UserModel, error)
+	GetUserByID(context.Context, int64) (*UserModel, error)
 	DeleteUserByID(context.Context, int64) error
 	UpdateUserInfo(context.Context, *UserModel) error
 }

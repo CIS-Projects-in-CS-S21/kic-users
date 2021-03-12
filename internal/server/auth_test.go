@@ -1,12 +1,14 @@
 package server
 
 import (
-	"fmt"
+	"os"
+	"strconv"
 	"testing"
 )
 
 
-func TestUsersService_GenerateJWT(t *testing.T) {
+func TestUsersService_GenerateJWTAndDecode(t *testing.T) {
+	os.Setenv("SECRET_KEY", "I-hate-writing-tests")
 	s := NewUsersService(nil, nil)
 	tok, err := s.GenerateJWT(20)
 
@@ -20,13 +22,11 @@ func TestUsersService_GenerateJWT(t *testing.T) {
 		t.Errorf("error generating: %v", err)
 	}
 
-	fmt.Printf("%v %v\n", res, err)
-
 	id, _ := res.Get("uid")
 
-	if string(id) != 20 {
+	intID, err := strconv.Atoi(id.(string))
+
+	if intID != 20 {
 		t.Errorf("Key did not parse to the proper value got: %v", id)
 	}
-
-
 }
