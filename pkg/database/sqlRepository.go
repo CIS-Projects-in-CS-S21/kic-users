@@ -26,6 +26,7 @@ func (s *SQLRepository) checkIfUsernameAvailable(username string) bool {
 	var user UserModel
 	s.db.Where(&UserModel{Username: username}).First(&user)
 	if user.Username == username {
+		s.logger.Debugf("Username not available: %v", username)
 		return false
 	}
 	return true
@@ -35,9 +36,10 @@ func (s *SQLRepository) checkIfEmailAvailable(email string) bool {
 	var user UserModel
 	s.db.Where(&UserModel{Email: email}).First(&user)
 	if user.Email == email {
+		s.logger.Debugf("Email not available: %v", email)
 		return false
 	}
-	return false
+	return true
 }
 
 func (s *SQLRepository) AddUser(ctx context.Context, user *UserModel) (int64, []pbusers.AddUserError) {
@@ -45,25 +47,37 @@ func (s *SQLRepository) AddUser(ctx context.Context, user *UserModel) (int64, []
 	ok := true
 
 	if !s.checkIfUsernameAvailable(user.Username) {
+		s.logger.Debug("Username not available")
 		errors = append(errors, pbusers.AddUserError_DUPLICATE_USERNAME)
 		ok = false
 	}
 
+	s.logger.Debugf("Current ok: %v", ok)
+
 	if !s.checkIfEmailAvailable(user.Email) {
+		s.logger.Debug("Email not available")
+		s.logger.Debugf("Result of s.checkIfEmailAvailable(%v): %v", user.Email, s.checkIfEmailAvailable(user.Email))
 		errors = append(errors, pbusers.AddUserError_DUPLICATE_EMAIL)
 		ok = false
 	}
+
+	s.logger.Debugf("Current ok: %v", ok)
 
 	if ok {
 		s.db.Create(user)
 		return int64(user.ID), nil
 	}
 
+	s.logger.Debugf("Did not insert record %v", user)
+
 	return -1, errors
 }
 
 func (s *SQLRepository) GetUser(ctx context.Context, user *UserModel) (*UserModel, error) {
-	return nil, nil
+	toReturn := &UserModel{}
+	transaction := s.db.Where(user).Find(&toReturn)
+
+	return toReturn, transaction.Error
 }
 
 func (s *SQLRepository) GetUserByID(ctx context.Context, id int64) (*UserModel, error) {

@@ -40,7 +40,6 @@ func main() {
 
 	grpcServer := grpc.NewServer()
 
-
 	db, err := gorm.Open(mysql.Open(dbConnString), &gorm.Config{})
 
 	if err != nil {

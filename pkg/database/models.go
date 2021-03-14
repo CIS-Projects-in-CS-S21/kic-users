@@ -10,7 +10,7 @@ type UserModel struct {
 	gorm.Model
 	Email           string
 	Username 		string
-	Password 		string
+	Password 		string `gorm:"size:255"`
 	Birthday        time.Time
 	City            string
 }

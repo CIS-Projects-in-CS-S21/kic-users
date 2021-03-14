@@ -2,20 +2,19 @@ package server
 
 import (
 	"context"
-	pbcommon "github.com/kic/users/pkg/proto/common"
-	"github.com/lestrrat-go/jwx/jwk"
-	"golang.org/x/crypto/bcrypt"
+	"os"
+	"strconv"
 	"time"
 
-	"gorm.io/gorm"
+	"github.com/lestrrat-go/jwx/jwk"
+	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
-	"os"
-	"strconv"
-	"go.uber.org/zap"
 
 	"github.com/kic/users/pkg/database"
+	pbcommon "github.com/kic/users/pkg/proto/common"
 	pbusers "github.com/kic/users/pkg/proto/users"
 )
 
@@ -45,18 +44,24 @@ func NewUsersService(db database.Repository, logger *zap.SugaredLogger) *UsersSe
 }
 
 func (s *UsersService) GetJWTToken(ctx context.Context, req *pbusers.GetJWTTokenRequest) (*pbusers.GetJWTTokenResponse, error) {
+	s.logger.Debug("Getting JWT token")
+
 	valid, err := s.ValidateUser(req.Username, req.Password)
 
 	if err != nil {
+		s.logger.Debugf("User %v is invalid: %v", req.Username, err)
 		return nil, err
 	}
 
 	if !valid {
+		s.logger.Debugf("User %v is invalid", req.Username)
 		return &pbusers.GetJWTTokenResponse{
 			Token: "",
 			Error: pbusers.GetJWTTokenResponse_INVALID_PASSWORD,
 		}, nil
 	}
+
+	s.logger.Debugf("User %v is valid", req.Username)
 
 	userData, err := s.db.GetUser(context.TODO(), &database.UserModel{Username: req.Username})
 
@@ -65,6 +70,8 @@ func (s *UsersService) GetJWTToken(ctx context.Context, req *pbusers.GetJWTToken
 	}
 
 	token, err := s.GenerateJWT(int64(userData.ID))
+
+	s.logger.Debugf("Generated token: %v", token)
 
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "Could not generate token")
@@ -86,11 +93,12 @@ func (s *UsersService) AddUser(ctx context.Context, req *pbusers.AddUserRequest)
 		return nil, err
 	}
 
-	model := database.NewUserModel(req.Email, req.DesiredUsername, string(hashedPassword), req.City, req.Birthday)
+
+	model := database.NewUserModel(req.DesiredUsername, req.Email, string(hashedPassword), req.City, req.Birthday)
 
 	id, insertErrors := s.db.AddUser(context.TODO(), model)
 
-	if id == -1 {
+	if id != -1 {
 		return &pbusers.AddUserResponse{
 			Success:     true,
 			CreatedUser: &pbcommon.User{
@@ -112,7 +120,6 @@ func (s *UsersService) AddUser(ctx context.Context, req *pbusers.AddUserRequest)
 
 func (s *UsersService) GetUserByUsername(ctx context.Context, req *pbusers.GetUserByUsernameRequest) (*pbusers.GetUserByUsernameResponse, error) {
 	model := &database.UserModel{
-		Model:    gorm.Model{},
 		Email:    "",
 		Username: req.Username,
 		Password: "",
@@ -131,7 +138,7 @@ func (s *UsersService) GetUserByUsername(ctx context.Context, req *pbusers.GetUs
 	}
 
 	resp := &pbusers.GetUserByUsernameResponse{
-		Success: false,
+		Success: true,
 		User:    &pbcommon.User{
 			UserID:   int64(user.ID),
 			UserName: model.Username,

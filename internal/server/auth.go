@@ -2,19 +2,22 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	corev3 "github.com/envoyproxy/go-control-plane/envoy/config/core/v3"
 	authv3 "github.com/envoyproxy/go-control-plane/envoy/service/auth/v3"
 	typev3 "github.com/envoyproxy/go-control-plane/envoy/type/v3"
 	"github.com/gogo/googleapis/google/rpc"
-	"github.com/kic/users/pkg/database"
 	"github.com/lestrrat-go/jwx/jwa"
 	"github.com/lestrrat-go/jwx/jwt"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/genproto/googleapis/rpc/status"
+
+	"github.com/kic/users/pkg/database"
 )
 
 const (
@@ -25,7 +28,6 @@ const (
 func (s *UsersService) DecodeJWT(payload string) (jwt.Token, error) {
 	token, err := jwt.Parse(
 		[]byte(payload),
-		// Tell the parser that you want to use this keyset
 		jwt.WithKeySet(s.keyset),
 		jwt.UseDefaultKey(true),
 	)
@@ -62,36 +64,57 @@ func (s *UsersService) ValidateUser(username, password string) (bool, error) {
 	})
 
 	if err != nil {
+		s.logger.Debugf("Failed to get user from db to validate: %v", err)
 		return false, err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(res.Password), []byte(password))
 
 	if err != nil {
+		s.logger.Debugf("Failed to compare passwords: %v", err)
 		return false, nil
 	}
+	s.logger.Debugf("User is valid, returning")
 	return true, nil
 }
 
-func parseCredentialsFromHeader(header string) (string, string) {
-	return "", ""
+func parseCredentialsFromHeader(header string) (string, error) {
+	splitToken := strings.Split(header, "Bearer")
+	if len(splitToken) != 2 {
+		return "", errors.New("invalid header format")
+	}
+
+	reqToken := strings.TrimSpace(splitToken[1])
+
+	return reqToken, nil
 }
 
 // Check implements gRPC v3 check request.
 func (s *UsersService) Check(ctx context.Context, request *authv3.CheckRequest) (*authv3.CheckResponse, error) {
+	s.logger.Debug("Here")
 	l := fmt.Sprintf("%s%s, attributes: %v\n",
 		request.GetAttributes().GetRequest().GetHttp().GetHost(),
 		request.GetAttributes().GetRequest().GetHttp().GetPath(),
 		request.GetAttributes())
 
+	s.logger.Debugf("Handling request: %v", l)
 
-	creds := request.GetAttributes().GetRequest().GetHttp().GetHeaders()[authHeader]
+	header := request.GetAttributes().GetRequest().GetHttp().GetHeaders()[authHeader]
 
-	username, password := parseCredentialsFromHeader(creds)
+	approve := true
 
-	approve, err := s.ValidateUser(username, password)
+	tok, err := parseCredentialsFromHeader(header)
 
-	if err == nil && approve {
+	if err != nil {
+		approve = false
+	} else {
+		_, err := s.DecodeJWT(tok)
+		if err != nil {
+			approve = false
+		}
+	}
+
+	if approve {
 		s.logger.Infof("[gRPCv3][allowed]: %s", l)
 		return &authv3.CheckResponse{
 			HttpResponse: &authv3.CheckResponse_OkResponse{
