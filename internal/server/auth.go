@@ -21,8 +21,10 @@ import (
 )
 
 const (
-	authHeader = "Authorization"
+	authHeader = "authorization"
 	denyBody = "Bad credentials"
+	resultHeader  = "x-ext-authz-check-result"
+	resultAllowed = "allowed"
 )
 
 func (s *UsersService) DecodeJWT(payload string) (jwt.Token, error) {
@@ -91,13 +93,10 @@ func parseCredentialsFromHeader(header string) (string, error) {
 
 // Check implements gRPC v3 check request.
 func (s *UsersService) Check(ctx context.Context, request *authv3.CheckRequest) (*authv3.CheckResponse, error) {
-	s.logger.Debug("Here")
 	l := fmt.Sprintf("%s%s, attributes: %v\n",
 		request.GetAttributes().GetRequest().GetHttp().GetHost(),
 		request.GetAttributes().GetRequest().GetHttp().GetPath(),
 		request.GetAttributes())
-
-	s.logger.Debugf("Handling request: %v", l)
 
 	header := request.GetAttributes().GetRequest().GetHttp().GetHeaders()[authHeader]
 
@@ -121,6 +120,10 @@ func (s *UsersService) Check(ctx context.Context, request *authv3.CheckRequest) 
 				OkResponse: &authv3.OkHttpResponse{
 					Headers: []*corev3.HeaderValueOption{
 						{
+							Header: &corev3.HeaderValue{
+								Key:   resultHeader,
+								Value: resultAllowed,
+							},
 						},
 					},
 				},
