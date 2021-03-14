@@ -1,0 +1,22 @@
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  namespace: kic
+  name: kic-users
+spec:
+  selector:
+    matchLabels:
+      app: kic-users
+  action: CUSTOM
+  provider:
+    name: ext-authz-grpc
+  rules:
+    - to:
+        - operation:
+            paths: [
+                "/kic.users.Users/GetUserByUsername",
+                "/kic.users.Users/DeleteUserByID",
+                "/kic.users.Users/GetUserByID",
+                "/kic.users.Users/UpdateUserInfo",
+                "/kic.users.Users/GetUserNameByID",
+            ]
