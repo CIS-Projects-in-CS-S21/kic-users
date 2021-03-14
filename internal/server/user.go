@@ -189,9 +189,13 @@ func (s *UsersService) DeleteUserByID(ctx context.Context, req *pbusers.DeleteUs
 		return nil, status.Errorf(codes.Unauthenticated, "Send token along with request")
 	}
 
-	token := headers[authHeader][0]
+	header := headers[authHeader][0]
 
-	tok, err := s.DecodeJWT(token)
+	s.logger.Debugf("Incoming header: %v", header)
+
+	tokString, err := parseCredentialsFromHeader(header)
+
+	tok, err := s.DecodeJWT(tokString)
 
 	if err != nil {
 		s.logger.Debugf("Failed to decode token")
