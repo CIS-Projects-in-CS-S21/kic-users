@@ -222,7 +222,45 @@ func (s *UsersService) DeleteUserByID(ctx context.Context, req *pbusers.DeleteUs
 	}, nil
 }
 
-func (s *UsersService) UpdateUserInfo(context.Context, *pbusers.UpdateUserInfoRequest) (*pbusers.UpdateUserInfoResponse, error) {
-	return nil, nil
+func (s *UsersService) UpdateUserInfo(ctx context.Context, req *pbusers.UpdateUserInfoRequest) (*pbusers.UpdateUserInfoResponse, error) {
+	// creating UpdateUserInfo Response that indicates failure
+	// will be returned if any operation fails
+	failureResponse := &pbusers.UpdateUserInfoResponse{
+		Success:     false,
+		UpdatedUser: nil,
+	}
+
+	var hashedPassword []byte // declaring hashedPassword to potentially be filled in
+	var err error // declaring err variable to hold potential errors
+
+	// if
+	if req.DesiredPassword != "" { // if password change is requested
+		hashedPassword, err = bcrypt.GenerateFromPassword([]byte(req.DesiredPassword), bcrypt.DefaultCost) // hash the password
+	}
+
+	// if error, log and return and failure
+	if err != nil {
+		s.logger.Errorf("Failed to hash password: %v", err)
+		return failureResponse, err
+	}
+
+	// create UserModel from updated fields
+	model := database.NewUserModel(req.DesiredUsername, req.Email, string(hashedPassword), req.City, req.Birthday)
+
+	// attempt to update db with model containing updated information
+	err = s.db.UpdateUserInfo(context.TODO(), model)
+
+	// if error, log and return failure
+	if err != nil {
+		s.logger.Errorf("Failed to Update User Info in database: %v", err)
+		return failureResponse, err
+	}
+
+	// creating success response
+	resp := &pbusers.UpdateUserInfoResponse{Success: true, UpdatedUser: nil}
+
+	// returning success response and nil error
+	return resp, nil
+
 }
 

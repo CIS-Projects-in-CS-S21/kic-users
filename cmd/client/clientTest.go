@@ -88,11 +88,32 @@ func main() {
 		log.Fatalf("Incorrect response from GetUserByID: %v", unameByIDRes.Username)
 	}
 
+
+	// testing UpdateUser() -------------------------------------
+
 	md = metadata.Pairs("Authorization", fmt.Sprintf("Bearer %v", tokRes.Token))
 	ctx = metadata.NewOutgoingContext(context.Background(), md)
 
 	//client.UpdateUserInfo(ctx, &pbusers.UpdateUserInfoRequest{})
+	updateReq := &pbusers.UpdateUserInfoRequest{
+		UserID:          addRes.CreatedUser.UserID,
+		Email:           "",
+		DesiredUsername: "",
+		DesiredPassword: "",
+		Birthday:        nil,
+		City:            "Philadelphia",
+	}
 
+	updateRes, err := client.UpdateUserInfo(ctx, updateReq)
+
+	fmt.Printf("res: %v\nerr: %v\n", updateRes, err)
+
+	if err != nil {
+		log.Fatalf("fail to update user: %v", err)
+	}
+
+
+	// ---------------------------------------------------------
 
 	md = metadata.Pairs("Authorization", fmt.Sprintf("Bearer %v", tokRes.Token))
 	ctx = metadata.NewOutgoingContext(context.Background(), md)
@@ -104,6 +125,5 @@ func main() {
 	}
 
 	fmt.Printf("deleteRes: %v\n", deleteRes)
-
 
 }
