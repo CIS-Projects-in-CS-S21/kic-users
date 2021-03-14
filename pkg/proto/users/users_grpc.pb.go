@@ -4,7 +4,6 @@ package proto
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -129,32 +128,27 @@ type UsersServer interface {
 }
 
 // UnimplementedUsersServer must be embedded to have forward compatible implementations.
-type UnimplementedUsersServer struct{}
+type UnimplementedUsersServer struct {
+}
 
 func (UnimplementedUsersServer) GetJWTToken(context.Context, *GetJWTTokenRequest) (*GetJWTTokenResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetJWTToken not implemented")
 }
-
 func (UnimplementedUsersServer) AddUser(context.Context, *AddUserRequest) (*AddUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddUser not implemented")
 }
-
 func (UnimplementedUsersServer) GetUserByUsername(context.Context, *GetUserByUsernameRequest) (*GetUserByUsernameResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserByUsername not implemented")
 }
-
 func (UnimplementedUsersServer) GetUserByID(context.Context, *GetUserByIDRequest) (*GetUserByIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserByID not implemented")
 }
-
 func (UnimplementedUsersServer) GetUserNameByID(context.Context, *GetUserNameByIDRequest) (*GetUserNameByIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetUserNameByID not implemented")
 }
-
 func (UnimplementedUsersServer) DeleteUserByID(context.Context, *DeleteUserByIDRequest) (*DeleteUserByIDResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteUserByID not implemented")
 }
-
 func (UnimplementedUsersServer) UpdateUserInfo(context.Context, *UpdateUserInfoRequest) (*UpdateUserInfoResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateUserInfo not implemented")
 }

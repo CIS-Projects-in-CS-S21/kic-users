@@ -4,7 +4,6 @@ package proto
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -18,14 +17,14 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type HealthTrackingClient interface {
-	// Given health data obtained upon user request, said health data is returned to user.
+	//Given health data obtained upon user request, said health data is returned to user.
 	GetHealthDataForUser(ctx context.Context, in *GetHealthDataForUserRequest, opts ...grpc.CallOption) (*GetHealthDataForUserResponse, error)
-	// Health data requested to be added by user is added, and error is returned if appropriate.
-	AddHealthDataForUser(ctx context.Context, in *AddHealthDataForUserRequest, opts ...grpc.CallOption) (*HealthDataErrorResponse, error)
-	// Health data requested by user to be deleted is deleted and said deleted entries are returned to user.
+	//Health data requested to be added by user is added, and error is returned if appropriate.
+	AddHealthDataForUser(ctx context.Context, in *AddHealthDataForUserRequest, opts ...grpc.CallOption) (*AddHealthDataForUserResponse, error)
+	//Health data requested by user to be deleted is deleted and said deleted entries are returned to user.
 	DeleteHealthDataForUser(ctx context.Context, in *DeleteHealthDataForUserRequest, opts ...grpc.CallOption) (*DeleteHealthDataForUserResponse, error)
-	// Health data requested to be updated by user is updated, and error is returned if appropriate.
-	UpdateHealthDataForDate(ctx context.Context, in *UpdateHealthDataForDateRequest, opts ...grpc.CallOption) (*HealthDataErrorResponse, error)
+	//Health data requested to be updated by user is updated, and error is returned if appropriate.
+	UpdateHealthDataForDate(ctx context.Context, in *UpdateHealthDataForDateRequest, opts ...grpc.CallOption) (*UpdateHealthDataForDateResponse, error)
 }
 
 type healthTrackingClient struct {
@@ -45,8 +44,8 @@ func (c *healthTrackingClient) GetHealthDataForUser(ctx context.Context, in *Get
 	return out, nil
 }
 
-func (c *healthTrackingClient) AddHealthDataForUser(ctx context.Context, in *AddHealthDataForUserRequest, opts ...grpc.CallOption) (*HealthDataErrorResponse, error) {
-	out := new(HealthDataErrorResponse)
+func (c *healthTrackingClient) AddHealthDataForUser(ctx context.Context, in *AddHealthDataForUserRequest, opts ...grpc.CallOption) (*AddHealthDataForUserResponse, error) {
+	out := new(AddHealthDataForUserResponse)
 	err := c.cc.Invoke(ctx, "/kic.health.HealthTracking/AddHealthDataForUser", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -63,8 +62,8 @@ func (c *healthTrackingClient) DeleteHealthDataForUser(ctx context.Context, in *
 	return out, nil
 }
 
-func (c *healthTrackingClient) UpdateHealthDataForDate(ctx context.Context, in *UpdateHealthDataForDateRequest, opts ...grpc.CallOption) (*HealthDataErrorResponse, error) {
-	out := new(HealthDataErrorResponse)
+func (c *healthTrackingClient) UpdateHealthDataForDate(ctx context.Context, in *UpdateHealthDataForDateRequest, opts ...grpc.CallOption) (*UpdateHealthDataForDateResponse, error) {
+	out := new(UpdateHealthDataForDateResponse)
 	err := c.cc.Invoke(ctx, "/kic.health.HealthTracking/UpdateHealthDataForDate", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -76,33 +75,31 @@ func (c *healthTrackingClient) UpdateHealthDataForDate(ctx context.Context, in *
 // All implementations must embed UnimplementedHealthTrackingServer
 // for forward compatibility
 type HealthTrackingServer interface {
-	// Given health data obtained upon user request, said health data is returned to user.
+	//Given health data obtained upon user request, said health data is returned to user.
 	GetHealthDataForUser(context.Context, *GetHealthDataForUserRequest) (*GetHealthDataForUserResponse, error)
-	// Health data requested to be added by user is added, and error is returned if appropriate.
-	AddHealthDataForUser(context.Context, *AddHealthDataForUserRequest) (*HealthDataErrorResponse, error)
-	// Health data requested by user to be deleted is deleted and said deleted entries are returned to user.
+	//Health data requested to be added by user is added, and error is returned if appropriate.
+	AddHealthDataForUser(context.Context, *AddHealthDataForUserRequest) (*AddHealthDataForUserResponse, error)
+	//Health data requested by user to be deleted is deleted and said deleted entries are returned to user.
 	DeleteHealthDataForUser(context.Context, *DeleteHealthDataForUserRequest) (*DeleteHealthDataForUserResponse, error)
-	// Health data requested to be updated by user is updated, and error is returned if appropriate.
-	UpdateHealthDataForDate(context.Context, *UpdateHealthDataForDateRequest) (*HealthDataErrorResponse, error)
+	//Health data requested to be updated by user is updated, and error is returned if appropriate.
+	UpdateHealthDataForDate(context.Context, *UpdateHealthDataForDateRequest) (*UpdateHealthDataForDateResponse, error)
 	mustEmbedUnimplementedHealthTrackingServer()
 }
 
 // UnimplementedHealthTrackingServer must be embedded to have forward compatible implementations.
-type UnimplementedHealthTrackingServer struct{}
+type UnimplementedHealthTrackingServer struct {
+}
 
 func (UnimplementedHealthTrackingServer) GetHealthDataForUser(context.Context, *GetHealthDataForUserRequest) (*GetHealthDataForUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetHealthDataForUser not implemented")
 }
-
-func (UnimplementedHealthTrackingServer) AddHealthDataForUser(context.Context, *AddHealthDataForUserRequest) (*HealthDataErrorResponse, error) {
+func (UnimplementedHealthTrackingServer) AddHealthDataForUser(context.Context, *AddHealthDataForUserRequest) (*AddHealthDataForUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddHealthDataForUser not implemented")
 }
-
 func (UnimplementedHealthTrackingServer) DeleteHealthDataForUser(context.Context, *DeleteHealthDataForUserRequest) (*DeleteHealthDataForUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteHealthDataForUser not implemented")
 }
-
-func (UnimplementedHealthTrackingServer) UpdateHealthDataForDate(context.Context, *UpdateHealthDataForDateRequest) (*HealthDataErrorResponse, error) {
+func (UnimplementedHealthTrackingServer) UpdateHealthDataForDate(context.Context, *UpdateHealthDataForDateRequest) (*UpdateHealthDataForDateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateHealthDataForDate not implemented")
 }
 func (UnimplementedHealthTrackingServer) mustEmbedUnimplementedHealthTrackingServer() {}

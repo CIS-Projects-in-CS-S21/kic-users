@@ -4,7 +4,6 @@ package proto
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -114,28 +113,24 @@ type FriendsServer interface {
 }
 
 // UnimplementedFriendsServer must be embedded to have forward compatible implementations.
-type UnimplementedFriendsServer struct{}
+type UnimplementedFriendsServer struct {
+}
 
 func (UnimplementedFriendsServer) GetFriendsForUser(context.Context, *GetFriendsForUserRequest) (*GetFriendsForUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFriendsForUser not implemented")
 }
-
 func (UnimplementedFriendsServer) GetConnectionBetweenUsers(context.Context, *GetConnectionBetweenUsersRequest) (*ConnectionBetweenUsersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetConnectionBetweenUsers not implemented")
 }
-
 func (UnimplementedFriendsServer) GetRecommendationsForUser(context.Context, *GetRecommendationsForUserRequest) (*GetRecommendationsForUserResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetRecommendationsForUser not implemented")
 }
-
 func (UnimplementedFriendsServer) CreateConnectionForUsers(context.Context, *CreateConnectionForUsersRequest) (*CreateConnectionForUsersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateConnectionForUsers not implemented")
 }
-
 func (UnimplementedFriendsServer) UpdateConnectionBetweenUsers(context.Context, *UpdateConnectionBetweenUsersRequest) (*ConnectionBetweenUsersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateConnectionBetweenUsers not implemented")
 }
-
 func (UnimplementedFriendsServer) DeleteConnectionBetweenUsers(context.Context, *DeleteConnectionBetweenUsersRequest) (*DeleteConnectionBetweenUsersResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteConnectionBetweenUsers not implemented")
 }

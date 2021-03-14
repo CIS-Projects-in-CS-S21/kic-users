@@ -4,7 +4,6 @@ package proto
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -28,6 +27,8 @@ type MediaStorageClient interface {
 	DownloadFileByName(ctx context.Context, in *DownloadFileRequest, opts ...grpc.CallOption) (MediaStorage_DownloadFileByNameClient, error)
 	// Check for the existence of a file by filename
 	CheckForFileByName(ctx context.Context, in *CheckForFileRequest, opts ...grpc.CallOption) (*CheckForFileResponse, error)
+	UpdateFilesWithMetadata(ctx context.Context, in *UpdateFilesWithMetadataRequest, opts ...grpc.CallOption) (*UpdateFilesWithMetadataResponse, error)
+	AddCommentToFile(ctx context.Context, in *AddCommentToFileRequest, opts ...grpc.CallOption) (*AddCommentToFileResponse, error)
 	//
 	// Allows for the requesting of files with specific key value pairs as metadata. The strictness can be set
 	// such that for example only perfect matches will be returned.
@@ -120,6 +121,24 @@ func (c *mediaStorageClient) CheckForFileByName(ctx context.Context, in *CheckFo
 	return out, nil
 }
 
+func (c *mediaStorageClient) UpdateFilesWithMetadata(ctx context.Context, in *UpdateFilesWithMetadataRequest, opts ...grpc.CallOption) (*UpdateFilesWithMetadataResponse, error) {
+	out := new(UpdateFilesWithMetadataResponse)
+	err := c.cc.Invoke(ctx, "/kic.media.MediaStorage/UpdateFilesWithMetadata", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *mediaStorageClient) AddCommentToFile(ctx context.Context, in *AddCommentToFileRequest, opts ...grpc.CallOption) (*AddCommentToFileResponse, error) {
+	out := new(AddCommentToFileResponse)
+	err := c.cc.Invoke(ctx, "/kic.media.MediaStorage/AddCommentToFile", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *mediaStorageClient) GetFilesWithMetadata(ctx context.Context, in *GetFilesByMetadataRequest, opts ...grpc.CallOption) (*GetFilesByMetadataResponse, error) {
 	out := new(GetFilesByMetadataResponse)
 	err := c.cc.Invoke(ctx, "/kic.media.MediaStorage/GetFilesWithMetadata", in, out, opts...)
@@ -152,6 +171,8 @@ type MediaStorageServer interface {
 	DownloadFileByName(*DownloadFileRequest, MediaStorage_DownloadFileByNameServer) error
 	// Check for the existence of a file by filename
 	CheckForFileByName(context.Context, *CheckForFileRequest) (*CheckForFileResponse, error)
+	UpdateFilesWithMetadata(context.Context, *UpdateFilesWithMetadataRequest) (*UpdateFilesWithMetadataResponse, error)
+	AddCommentToFile(context.Context, *AddCommentToFileRequest) (*AddCommentToFileResponse, error)
 	//
 	// Allows for the requesting of files with specific key value pairs as metadata. The strictness can be set
 	// such that for example only perfect matches will be returned.
@@ -163,24 +184,27 @@ type MediaStorageServer interface {
 }
 
 // UnimplementedMediaStorageServer must be embedded to have forward compatible implementations.
-type UnimplementedMediaStorageServer struct{}
+type UnimplementedMediaStorageServer struct {
+}
 
 func (UnimplementedMediaStorageServer) UploadFile(MediaStorage_UploadFileServer) error {
 	return status.Errorf(codes.Unimplemented, "method UploadFile not implemented")
 }
-
 func (UnimplementedMediaStorageServer) DownloadFileByName(*DownloadFileRequest, MediaStorage_DownloadFileByNameServer) error {
 	return status.Errorf(codes.Unimplemented, "method DownloadFileByName not implemented")
 }
-
 func (UnimplementedMediaStorageServer) CheckForFileByName(context.Context, *CheckForFileRequest) (*CheckForFileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckForFileByName not implemented")
 }
-
+func (UnimplementedMediaStorageServer) UpdateFilesWithMetadata(context.Context, *UpdateFilesWithMetadataRequest) (*UpdateFilesWithMetadataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateFilesWithMetadata not implemented")
+}
+func (UnimplementedMediaStorageServer) AddCommentToFile(context.Context, *AddCommentToFileRequest) (*AddCommentToFileResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddCommentToFile not implemented")
+}
 func (UnimplementedMediaStorageServer) GetFilesWithMetadata(context.Context, *GetFilesByMetadataRequest) (*GetFilesByMetadataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetFilesWithMetadata not implemented")
 }
-
 func (UnimplementedMediaStorageServer) DeleteFilesWithMetaData(context.Context, *DeleteFilesWithMetaDataRequest) (*DeleteFilesWithMetaDataResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteFilesWithMetaData not implemented")
 }
@@ -262,6 +286,42 @@ func _MediaStorage_CheckForFileByName_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _MediaStorage_UpdateFilesWithMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateFilesWithMetadataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MediaStorageServer).UpdateFilesWithMetadata(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/kic.media.MediaStorage/UpdateFilesWithMetadata",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MediaStorageServer).UpdateFilesWithMetadata(ctx, req.(*UpdateFilesWithMetadataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _MediaStorage_AddCommentToFile_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddCommentToFileRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(MediaStorageServer).AddCommentToFile(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/kic.media.MediaStorage/AddCommentToFile",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(MediaStorageServer).AddCommentToFile(ctx, req.(*AddCommentToFileRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _MediaStorage_GetFilesWithMetadata_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetFilesByMetadataRequest)
 	if err := dec(in); err != nil {
@@ -305,6 +365,14 @@ var _MediaStorage_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CheckForFileByName",
 			Handler:    _MediaStorage_CheckForFileByName_Handler,
+		},
+		{
+			MethodName: "UpdateFilesWithMetadata",
+			Handler:    _MediaStorage_UpdateFilesWithMetadata_Handler,
+		},
+		{
+			MethodName: "AddCommentToFile",
+			Handler:    _MediaStorage_AddCommentToFile_Handler,
 		},
 		{
 			MethodName: "GetFilesWithMetadata",
