@@ -57,7 +57,6 @@ func (s *UsersService) GetJWTToken(ctx context.Context, req *pbusers.GetJWTToken
 		s.logger.Debugf("User %v is invalid", req.Username)
 		return &pbusers.GetJWTTokenResponse{
 			Token: "",
-			Error: pbusers.GetJWTTokenResponse_INVALID_PASSWORD,
 		}, nil
 	}
 
@@ -79,7 +78,6 @@ func (s *UsersService) GetJWTToken(ctx context.Context, req *pbusers.GetJWTToken
 
 	resp := &pbusers.GetJWTTokenResponse{
 		Token: token,
-		Error: -1,
 	}
 
 	return resp, nil
@@ -96,7 +94,7 @@ func (s *UsersService) AddUser(ctx context.Context, req *pbusers.AddUserRequest)
 
 	model := database.NewUserModel(req.DesiredUsername, req.Email, string(hashedPassword), req.City, req.Birthday)
 
-	id, insertErrors := s.db.AddUser(context.TODO(), model)
+	id, err := s.db.AddUser(context.TODO(), model)
 
 	if id != -1 {
 		return &pbusers.AddUserResponse{
@@ -106,14 +104,12 @@ func (s *UsersService) AddUser(ctx context.Context, req *pbusers.AddUserRequest)
 				UserName: model.Username,
 				Email:    model.Email,
 			},
-			Errors:      nil,
-		}, nil
+		}, err
 	}
 
 	resp := &pbusers.AddUserResponse{
 		Success: false,
 		CreatedUser: nil,
-		Errors: insertErrors,
 	}
 	return resp, nil
 }
@@ -133,7 +129,6 @@ func (s *UsersService) GetUserByUsername(ctx context.Context, req *pbusers.GetUs
 		return &pbusers.GetUserByUsernameResponse{
 			Success: false,
 			User:    nil,
-			Errors:  nil,
 		}, err
 	}
 
@@ -144,7 +139,6 @@ func (s *UsersService) GetUserByUsername(ctx context.Context, req *pbusers.GetUs
 			UserName: model.Username,
 			Email:    model.Email,
 		},
-		Errors:  nil,
 	}
 	return resp, err
 }
@@ -156,7 +150,6 @@ func (s *UsersService) GetUserByID(ctx context.Context, req *pbusers.GetUserByID
 		return &pbusers.GetUserByIDResponse{
 			Success: false,
 			User:    nil,
-			Errors:  nil,
 		}, err
 	}
 
@@ -167,7 +160,6 @@ func (s *UsersService) GetUserByID(ctx context.Context, req *pbusers.GetUserByID
 			UserName: usr.Username,
 			Email:    usr.Email,
 		},
-		Errors:  nil,
 	}
 
 	return resp, nil

@@ -54,7 +54,7 @@ func main() {
 
 	fmt.Printf("tokRes: %v\n", tokRes)
 
-	md := metadata.Pairs("Authorization", fmt.Sprintf("Bearer %v", tokRes.Token))
+	md := metadata.Pairs("Authorization", fmt.Sprintf("Bearer %v", tokRes.Token), "x-ext-authz", "allow")
 	ctx := metadata.NewOutgoingContext(context.Background(), md)
 
 	usernameRes, err := client.GetUserByUsername(ctx, &pbusers.GetUserByUsernameRequest{Username: "qdnovinger"})

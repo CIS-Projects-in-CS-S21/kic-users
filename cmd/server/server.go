@@ -12,6 +12,7 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gorm.io/driver/mysql"
+	authv3 "github.com/envoyproxy/go-control-plane/envoy/service/auth/v3"
 
 	"github.com/kic/users/internal/server"
 	"github.com/kic/users/pkg/logging"
@@ -57,6 +58,7 @@ func main() {
 	serv := server.NewUsersService(repo, logger)
 
 	pbusers.RegisterUsersServer(grpcServer, serv)
+	authv3.RegisterAuthorizationServer(grpcServer, serv)
 
 
 	go func() {

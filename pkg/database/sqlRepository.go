@@ -3,8 +3,6 @@ package database
 import (
 	"context"
 
-	pbusers "github.com/kic/users/pkg/proto/users"
-
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -42,13 +40,11 @@ func (s *SQLRepository) checkIfEmailAvailable(email string) bool {
 	return true
 }
 
-func (s *SQLRepository) AddUser(ctx context.Context, user *UserModel) (int64, []pbusers.AddUserError) {
-	var errors []pbusers.AddUserError
+func (s *SQLRepository) AddUser(ctx context.Context, user *UserModel) (int64, error) {
 	ok := true
 
 	if !s.checkIfUsernameAvailable(user.Username) {
 		s.logger.Debug("Username not available")
-		errors = append(errors, pbusers.AddUserError_DUPLICATE_USERNAME)
 		ok = false
 	}
 
@@ -57,7 +53,6 @@ func (s *SQLRepository) AddUser(ctx context.Context, user *UserModel) (int64, []
 	if !s.checkIfEmailAvailable(user.Email) {
 		s.logger.Debug("Email not available")
 		s.logger.Debugf("Result of s.checkIfEmailAvailable(%v): %v", user.Email, s.checkIfEmailAvailable(user.Email))
-		errors = append(errors, pbusers.AddUserError_DUPLICATE_EMAIL)
 		ok = false
 	}
 
@@ -70,7 +65,7 @@ func (s *SQLRepository) AddUser(ctx context.Context, user *UserModel) (int64, []
 
 	s.logger.Debugf("Did not insert record %v", user)
 
-	return -1, errors
+	return -1, nil
 }
 
 func (s *SQLRepository) GetUser(ctx context.Context, user *UserModel) (*UserModel, error) {
