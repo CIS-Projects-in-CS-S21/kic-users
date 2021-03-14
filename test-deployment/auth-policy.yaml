@@ -16,7 +16,7 @@ spec:
             paths: [
                     "/kic.users.Users/GetUserByUsername",
                     "/kic.users.Users/DeleteUserByID",
-                    "/kic.users.Users/GetUserNameByID",
+                    "/kic.users.Users/GetUserByID",
                     "/kic.users.Users/UpdateUserInfo",
                     "/kic.users.Users/GetUserNameByID",
             ]
