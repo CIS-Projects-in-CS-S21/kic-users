@@ -1,3 +1,4 @@
 resources:
   - deployment/deployment.yaml
   - deployment/istio-config.yaml
+  - deployment/auth-policy
