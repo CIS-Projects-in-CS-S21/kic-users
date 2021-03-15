@@ -230,6 +230,8 @@ func (s *UsersService) UpdateUserInfo(ctx context.Context, req *pbusers.UpdateUs
 		UpdatedUser: nil,
 	}
 
+	s.logger.Debugf("Starting UpdateUserInfo with req: %v", req)
+
 	var hashedPassword []byte // declaring hashedPassword to potentially be filled in
 	var err error // declaring err variable to hold potential errors
 
@@ -247,6 +249,10 @@ func (s *UsersService) UpdateUserInfo(ctx context.Context, req *pbusers.UpdateUs
 	// create UserModel from updated fields
 	model := database.NewUserModel(req.DesiredUsername, req.Email, string(hashedPassword), req.City, req.Birthday)
 
+	model.ID = uint(req.UserID)
+
+	s.logger.Debugf("Created new user model: %v", model)
+
 	// attempt to update db with model containing updated information
 	err = s.db.UpdateUserInfo(context.TODO(), model)
 
@@ -255,6 +261,8 @@ func (s *UsersService) UpdateUserInfo(ctx context.Context, req *pbusers.UpdateUs
 		s.logger.Errorf("Failed to Update User Info in database: %v", err)
 		return failureResponse, err
 	}
+
+	s.logger.Debug("Finished updating info in db, returning")
 
 	// creating success response
 	resp := &pbusers.UpdateUserInfoResponse{Success: true, UpdatedUser: nil}

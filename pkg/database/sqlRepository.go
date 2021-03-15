@@ -90,53 +90,46 @@ func (s *SQLRepository) UpdateUserInfo(ctx context.Context, user *UserModel) err
 	var tx *gorm.DB // declaring response variable DB, which will be returned form s.db.Update()
 
 	if user.Email != "" { // update Email if it's been changed
-		tx = s.db.Update("Email", user.Email)
-	}
-
-	if tx.Error != nil { // return error if there is one
-		return tx.Error
+		tx = s.db.Model(&UserModel{}).Where("id = ?", user.ID).Update("Email", user.Email)
+		if tx.Error != nil { // return error if there is one
+			return tx.Error
+		}
 	}
 
 	if user.Username != "" { // update Username if it's been changed
-		tx = s.db.Update("Username", user.Username)
-	}
-
-	if tx.Error != nil { // return error if there is one
-		return tx.Error
-	}
-
-	if user.Password != "" { // update Password if it's been changed
-		tx = s.db.Update("Password", user.Password)
-	}
-
-	if tx.Error != nil { // return error if there is one
-		return tx.Error
+		tx = s.db.Model(&UserModel{}).Where("id = ?", user.ID).Update("Username", user.Username)
+		if tx.Error != nil { // return error if there is one
+			return tx.Error
+		}
 	}
 
 	if user.Password != "" { // update Password if it's been changed
-		tx = s.db.Update("Password", user.Password)
+		tx = s.db.Model(&UserModel{}).Where("id = ?", user.ID).Update("Password", user.Password)
+		if tx.Error != nil { // return error if there is one
+			return tx.Error
+		}
 	}
 
-	if tx.Error != nil { // return error if there is one
-		return tx.Error
+	if user.Password != "" { // update Password if it's been changed
+		tx = s.db.Model(&UserModel{}).Where("id = ?", user.ID).Update("Password", user.Password)
+		if tx.Error != nil { // return error if there is one
+			return tx.Error
+		}
 	}
 
-	if &user.Birthday != nil { // update Birthday if it's been changed
-		tx = s.db.Update("Birthday", user.Birthday)
-	}
-
-	if tx.Error != nil { // return error if there is one
-		return tx.Error
+	if !user.Birthday.IsZero() { // update Birthday if it's been changed
+		tx = s.db.Model(&UserModel{}).Where("id = ?", user.ID).Update("Birthday", user.Birthday)
+		if tx.Error != nil { // return error if there is one
+			return tx.Error
+		}
 	}
 
 	if user.City != "" { // update Password if it's been changed
-		tx = s.db.Update("City", user.City)
+		tx = s.db.Model(&UserModel{}).Where("id = ?", user.ID).Update("City", user.City)
+		if tx.Error != nil { // return error if there is one
+			return tx.Error
+		}
 	}
-
-	if tx.Error != nil { // return error if there is one
-		return tx.Error
-	}
-
 
 	return nil
 }

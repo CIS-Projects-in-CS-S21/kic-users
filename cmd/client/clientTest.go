@@ -94,7 +94,6 @@ func main() {
 	md = metadata.Pairs("Authorization", fmt.Sprintf("Bearer %v", tokRes.Token))
 	ctx = metadata.NewOutgoingContext(context.Background(), md)
 
-	//client.UpdateUserInfo(ctx, &pbusers.UpdateUserInfoRequest{})
 	updateReq := &pbusers.UpdateUserInfoRequest{
 		UserID:          addRes.CreatedUser.UserID,
 		Email:           "",
