@@ -69,7 +69,7 @@ func (s *SQLRepository) AddUser(ctx context.Context, user *UserModel) (int64, er
 
 func (s *SQLRepository) GetUser(ctx context.Context, user *UserModel) (*UserModel, error) {
 	toReturn := &UserModel{}
-	transaction := s.db.Where(user).Find(&toReturn)
+	transaction := s.db.Where("username = ?", user.Username).First(&toReturn)
 
 	return toReturn, transaction.Error
 }
@@ -87,20 +87,40 @@ func (s *SQLRepository) DeleteUserByID(ctx context.Context, userID int64) error 
 }
 
 func (s *SQLRepository) UpdateUserInfo(ctx context.Context, user *UserModel) error {
+	ok := true
 	var tx *gorm.DB // declaring response variable DB, which will be returned form s.db.Update()
 
 	if user.Email != "" { // update Email if it's been changed
-		tx = s.db.Model(&UserModel{}).Where("id = ?", user.ID).Update("Email", user.Email)
-		if tx.Error != nil { // return error if there is one
-			return tx.Error
+		if !s.checkIfEmailAvailable(user.Email) {
+			s.logger.Debug("Email not available")
+			s.logger.Debugf("Result of s.checkIfEmailAvailable(%v): %v", user.Email, s.checkIfEmailAvailable(user.Email))
+			ok = false
 		}
+		s.logger.Debugf("Current ok (in email case): %v", ok)
+
+		if ok {
+			tx = s.db.Model(&UserModel{}).Where("id = ?", user.ID).Update("Email", user.Email)
+			if tx.Error != nil { // return error if there is one
+				return tx.Error
+			}
+		}
+
 	}
 
 	if user.Username != "" { // update Username if it's been changed
-		tx = s.db.Model(&UserModel{}).Where("id = ?", user.ID).Update("Username", user.Username)
-		if tx.Error != nil { // return error if there is one
-			return tx.Error
+		if !s.checkIfUsernameAvailable(user.Username) {
+			s.logger.Debug("Username not available")
+			ok = false
 		}
+		s.logger.Debugf("Current ok (in username case): %v", ok)
+
+		if ok {
+			tx = s.db.Model(&UserModel{}).Where("id = ?", user.ID).Update("Username", user.Username)
+			if tx.Error != nil { // return error if there is one
+				return tx.Error
+			}
+		}
+
 	}
 
 	if user.Password != "" { // update Password if it's been changed

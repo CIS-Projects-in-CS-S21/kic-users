@@ -97,7 +97,7 @@ func main() {
 	updateReq := &pbusers.UpdateUserInfoRequest{
 		UserID:          addRes.CreatedUser.UserID,
 		Email:           "",
-		DesiredUsername: "",
+		DesiredUsername: "hot_mama_RAWR_XD",
 		DesiredPassword: "",
 		Birthday:        nil,
 		City:            "Philadelphia",
@@ -105,7 +105,7 @@ func main() {
 
 	updateRes, err := client.UpdateUserInfo(ctx, updateReq)
 
-	fmt.Printf("res: %v\nerr: %v\n", updateRes, err)
+	fmt.Printf("Update res: %v\nerr: %v\n", updateRes, err)
 
 	if err != nil {
 		log.Fatalf("fail to update user: %v", err)
@@ -113,6 +113,18 @@ func main() {
 
 
 	// ---------------------------------------------------------
+
+	// Getting user again
+
+	md = metadata.Pairs("Authorization", fmt.Sprintf("Bearer %v", tokRes.Token))
+	ctx = metadata.NewOutgoingContext(context.Background(), md)
+
+	usernameRes, err = client.GetUserByUsername(ctx, &pbusers.GetUserByUsernameRequest{Username: "hot_mama_RAWR_XD"})
+
+
+	fmt.Printf("Get res: %v\nerr: %v\n", usernameRes, err)
+
+	// -------------------------
 
 	md = metadata.Pairs("Authorization", fmt.Sprintf("Bearer %v", tokRes.Token))
 	ctx = metadata.NewOutgoingContext(context.Background(), md)
