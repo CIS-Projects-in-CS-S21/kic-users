@@ -125,7 +125,7 @@ func (s *UsersService) GetUserByUsername(ctx context.Context, req *pbusers.GetUs
 
 	user, err := s.db.GetUser(ctx, model)
 
-	if err != nil {
+	if err != nil || user.Username == "" {
 		return &pbusers.GetUserByUsernameResponse{
 			Success: false,
 			User:    nil,
@@ -136,8 +136,8 @@ func (s *UsersService) GetUserByUsername(ctx context.Context, req *pbusers.GetUs
 		Success: true,
 		User:    &pbcommon.User{
 			UserID:   int64(user.ID),
-			UserName: model.Username,
-			Email:    model.Email,
+			UserName: user.Username,
+			Email:    user.Email,
 		},
 	}
 	return resp, err
