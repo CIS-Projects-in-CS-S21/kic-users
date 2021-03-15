@@ -88,11 +88,43 @@ func main() {
 		log.Fatalf("Incorrect response from GetUserByID: %v", unameByIDRes.Username)
 	}
 
+
+	// testing UpdateUser() -------------------------------------
+
 	md = metadata.Pairs("Authorization", fmt.Sprintf("Bearer %v", tokRes.Token))
 	ctx = metadata.NewOutgoingContext(context.Background(), md)
 
-	//client.UpdateUserInfo(ctx, &pbusers.UpdateUserInfoRequest{})
+	updateReq := &pbusers.UpdateUserInfoRequest{
+		UserID:          addRes.CreatedUser.UserID,
+		Email:           "",
+		DesiredUsername: "hot_mama_RAWR_XD",
+		DesiredPassword: "",
+		Birthday:        nil,
+		City:            "Philadelphia",
+	}
 
+	updateRes, err := client.UpdateUserInfo(ctx, updateReq)
+
+	fmt.Printf("Update res: %v\nerr: %v\n", updateRes, err)
+
+	if err != nil {
+		log.Fatalf("fail to update user: %v", err)
+	}
+
+
+	// ---------------------------------------------------------
+
+	// Getting user again
+
+	md = metadata.Pairs("Authorization", fmt.Sprintf("Bearer %v", tokRes.Token))
+	ctx = metadata.NewOutgoingContext(context.Background(), md)
+
+	usernameRes, err = client.GetUserByUsername(ctx, &pbusers.GetUserByUsernameRequest{Username: "hot_mama_RAWR_XD"})
+
+
+	fmt.Printf("Get res: %v\nerr: %v\n", usernameRes, err)
+
+	// -------------------------
 
 	md = metadata.Pairs("Authorization", fmt.Sprintf("Bearer %v", tokRes.Token))
 	ctx = metadata.NewOutgoingContext(context.Background(), md)
@@ -104,6 +136,5 @@ func main() {
 	}
 
 	fmt.Printf("deleteRes: %v\n", deleteRes)
-
 
 }

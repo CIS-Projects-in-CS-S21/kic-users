@@ -1,32 +1,26 @@
 package database
 
 import (
-	common "github.com/kic/users/pkg/proto/common"
 	"go.uber.org/zap"
 )
 
 type MockRepository struct {
-	db *map[int]*UserInfo
+	db *map[int]*UserModel
 
 	logger *zap.SugaredLogger
+
+	idCounter int
 }
 
-type UserInfo struct {
-	Username string
-	Email string
-	Password string
-	Birthday *common.Date
-	ID int
-}
 
-func NewMockRepository(db *map[int]*UserInfo, logger *zap.SugaredLogger) *MockRepository {
+func NewMockRepository(db *map[int]*UserModel, logger *zap.SugaredLogger) *MockRepository {
 	return &MockRepository{
 		db:     db,
 		logger: logger,
 	}
 }
 
-func searchDBByUsername(db *map[int]*UserInfo, username string) (int, *UserInfo) {
+func searchDBByUsername(db *map[int]*UserModel, username string) (int, *UserModel) {
 	for key, value := range *db {
 		if value.Username == username {
 			return key, value
@@ -44,7 +38,7 @@ func (s *MockRepository) checkIfUsernameAvailable(username string) bool {
 	return true
 }
 
-func searchDBByEmail(db *map[int]*UserInfo, email string) (int, *UserInfo) {
+func searchDBByEmail(db *map[int]*UserModel, email string) (int, *UserModel) {
 	for key, value := range *db {
 		if value.Email == email {
 			return key, value
@@ -62,7 +56,7 @@ func (s *MockRepository) checkIfEmailAvailable(email string) bool {
 	return false
 }
 
-func (s *MockRepository) AddUser(user *UserInfo) (int, error) {
+func (s *MockRepository) AddUser(user *UserModel) (int, error) {
 	ok := true
 
 	if !s.checkIfUsernameAvailable(user.Username) {
@@ -75,14 +69,15 @@ func (s *MockRepository) AddUser(user *UserInfo) (int, error) {
 
 	if ok {
 		database := *s.db
-		database[user.ID] = user
-		return user.ID, nil
+		database[s.idCounter] = user
+		s.idCounter++
+		return s.idCounter - 1, nil
 	}
 
 	return -1, nil
 }
 
-func (s *MockRepository) GetUser (user *UserInfo) (*UserModel, error) {
+func (s *MockRepository) GetUser (user *UserModel) (*UserModel, error) {
 
 
 
