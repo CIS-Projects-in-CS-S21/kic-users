@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
         - image: gcr.io/PROJECT_ID/IMAGE:TAG
-          name: test-kic-users
+          name: kic-users
           imagePullPolicy: Always
           ports:
             - containerPort: 50051
