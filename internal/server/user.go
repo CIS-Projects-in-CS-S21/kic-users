@@ -55,9 +55,7 @@ func (s *UsersService) GetJWTToken(ctx context.Context, req *pbusers.GetJWTToken
 
 	if !valid {
 		s.logger.Debugf("User %v is invalid", req.Username)
-		return &pbusers.GetJWTTokenResponse{
-			Token: "",
-		}, nil
+		return nil, status.Errorf(codes.InvalidArgument, "Password incorrect")
 	}
 
 	s.logger.Debugf("User %v is valid", req.Username)
