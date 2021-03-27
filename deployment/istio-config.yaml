@@ -39,9 +39,13 @@ spec:
           - x-accept-response-streaming
           - x-user-agent
           - x-grpc-web
+          - Authorization
+          - authorization
         maxAge: 1728s
         exposeHeaders:
           - custom-header-1
           - grpc-status
           - grpc-message
+          - Authorization
+          - authorization
 
