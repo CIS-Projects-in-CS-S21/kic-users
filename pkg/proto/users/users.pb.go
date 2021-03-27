@@ -15,7 +15,7 @@
 package proto
 
 import (
-	common "./proto/common"
+	common "github.com/kic/users/pkg/proto/common"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"

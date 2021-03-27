@@ -90,7 +90,7 @@ func (s *UsersService) AddUser(ctx context.Context, req *pbusers.AddUserRequest)
 	}
 
 
-	model := database.NewUserModel(req.DesiredUsername, req.Email, string(hashedPassword), req.City, req.Birthday)
+	model := database.NewUserModel(req.DesiredUsername, req.Email, string(hashedPassword), req.City, "", req.Birthday)
 
 	id, err := s.db.AddUser(context.TODO(), model)
 
@@ -136,6 +136,13 @@ func (s *UsersService) GetUserByUsername(ctx context.Context, req *pbusers.GetUs
 			UserID:   int64(user.ID),
 			UserName: user.Username,
 			Email:    user.Email,
+			Birthday: &pbcommon.Date{
+				Year:  int32(user.Birthday.Year()),
+				Month: int32(user.Birthday.Month()),
+				Day:   int32(user.Birthday.Day()),
+			},
+			City:	  user.City,
+			Bio:      user.Bio,
 		},
 	}
 	return resp, err
@@ -157,6 +164,13 @@ func (s *UsersService) GetUserByID(ctx context.Context, req *pbusers.GetUserByID
 			UserID:   int64(usr.ID),
 			UserName: usr.Username,
 			Email:    usr.Email,
+			Birthday: &pbcommon.Date{
+				Year:  int32(usr.Birthday.Year()),
+				Month: int32(usr.Birthday.Month()),
+				Day:   int32(usr.Birthday.Day()),
+			},
+			City:	  usr.City,
+			Bio:      usr.Bio,
 		},
 	}
 
@@ -245,7 +259,7 @@ func (s *UsersService) UpdateUserInfo(ctx context.Context, req *pbusers.UpdateUs
 	}
 
 	// create UserModel from updated fields
-	model := database.NewUserModel(req.DesiredUsername, req.Email, string(hashedPassword), req.City, req.Birthday)
+	model := database.NewUserModel(req.DesiredUsername, req.Email, string(hashedPassword), req.City, req.Bio, req.Birthday)
 
 	model.ID = uint(req.UserID)
 

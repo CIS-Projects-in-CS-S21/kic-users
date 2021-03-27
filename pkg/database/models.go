@@ -13,9 +13,10 @@ type UserModel struct {
 	Password 		string `gorm:"size:255"`
 	Birthday        time.Time
 	City            string
+	Bio				string
 }
 
-func NewUserModel(username, email, password, city string, birthday *pbcommon.Date) *UserModel {
+func NewUserModel(username, email, password, city, bio string, birthday *pbcommon.Date) *UserModel {
 	var bday time.Time
 	if birthday != nil {
 		bday = time.Date(int(birthday.Year), time.Month(birthday.Month), int(birthday.Day), 0,0,0,0, time.Local)
@@ -26,5 +27,6 @@ func NewUserModel(username, email, password, city string, birthday *pbcommon.Dat
 		Password: password,
 		Birthday: bday,
 		City:     city,
+		Bio: 	  bio,
 	}
 }
