@@ -151,5 +151,12 @@ func (s *SQLRepository) UpdateUserInfo(ctx context.Context, user *UserModel) err
 		}
 	}
 
+	if user.Bio != "" {
+		tx = s.db.Model(&UserModel{}).Where("id = ?", user.ID).Update("Bio", user.Bio)
+		if tx.Error != nil { // return error if there is one
+			return tx.Error
+		}
+	}
+
 	return nil
 }

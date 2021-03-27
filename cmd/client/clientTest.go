@@ -101,6 +101,7 @@ func main() {
 		DesiredPassword: "",
 		Birthday:        nil,
 		City:            "Philadelphia",
+		Bio:             "Hey guys I am Ryan",
 	}
 
 	updateRes, err := client.UpdateUserInfo(ctx, updateReq)
