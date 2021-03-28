@@ -109,7 +109,7 @@ func (s *UsersService) AddUser(ctx context.Context, req *pbusers.AddUserRequest)
 		Success: false,
 		CreatedUser: nil,
 	}
-	return resp, nil
+	return resp, status.Errorf(codes.AlreadyExists, "User already exists")
 }
 
 func (s *UsersService) GetUserByUsername(ctx context.Context, req *pbusers.GetUserByUsernameRequest) (*pbusers.GetUserByUsernameResponse, error) {
@@ -276,8 +276,21 @@ func (s *UsersService) UpdateUserInfo(ctx context.Context, req *pbusers.UpdateUs
 
 	s.logger.Debug("Finished updating info in db, returning")
 
+	usr, _ := s.db.GetUserByID(context.TODO(), req.GetUserID())
+
 	// creating success response
-	resp := &pbusers.UpdateUserInfoResponse{Success: true, UpdatedUser: nil}
+	resp := &pbusers.UpdateUserInfoResponse{Success: true, UpdatedUser: &pbcommon.User{
+		UserID:   int64(usr.ID),
+		UserName: usr.Username,
+		Email:    usr.Email,
+		Birthday: &pbcommon.Date{
+			Year:  int32(usr.Birthday.Year()),
+			Month: int32(usr.Birthday.Month()),
+			Day:   int32(usr.Birthday.Day()),
+		},
+		City:	  usr.City,
+		Bio:      usr.Bio,
+	}}
 
 	// returning success response and nil error
 	return resp, nil
