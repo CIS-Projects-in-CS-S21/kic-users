@@ -21,8 +21,8 @@ import (
 )
 
 const (
-	authHeader = "authorization"
-	denyBody = "Bad credentials"
+	authHeader    = "authorization"
+	denyBody      = "Bad credentials"
 	resultHeader  = "x-ext-authz-check-result"
 	resultAllowed = "allowed"
 )
@@ -139,8 +139,7 @@ func (s *UsersService) Check(ctx context.Context, request *authv3.CheckRequest) 
 				Status: &typev3.HttpStatus{Code: typev3.StatusCode_Forbidden},
 				Body:   denyBody,
 				Headers: []*corev3.HeaderValueOption{
-					{
-					},
+					{},
 				},
 			},
 		},

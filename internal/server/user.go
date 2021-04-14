@@ -21,7 +21,7 @@ import (
 type UsersService struct {
 	pbusers.UnimplementedUsersServer
 
-	db database.Repository
+	db     database.Repository
 	keyset jwk.Set
 
 	logger *zap.SugaredLogger
@@ -37,9 +37,9 @@ func NewUsersService(db database.Repository, logger *zap.SugaredLogger) *UsersSe
 	keyset.Add(jkey)
 
 	return &UsersService{
-		db:                       db,
-		keyset: 				  keyset,
-		logger:                   logger,
+		db:     db,
+		keyset: keyset,
+		logger: logger,
 	}
 }
 
@@ -89,14 +89,13 @@ func (s *UsersService) AddUser(ctx context.Context, req *pbusers.AddUserRequest)
 		return nil, err
 	}
 
-
 	model := database.NewUserModel(req.DesiredUsername, req.Email, string(hashedPassword), req.City, "", req.Birthday)
 
 	id, err := s.db.AddUser(context.TODO(), model)
 
 	if id != -1 {
 		return &pbusers.AddUserResponse{
-			Success:     true,
+			Success: true,
 			CreatedUser: &pbcommon.User{
 				UserID:   id,
 				UserName: model.Username,
@@ -106,7 +105,7 @@ func (s *UsersService) AddUser(ctx context.Context, req *pbusers.AddUserRequest)
 	}
 
 	resp := &pbusers.AddUserResponse{
-		Success: false,
+		Success:     false,
 		CreatedUser: nil,
 	}
 	return resp, status.Errorf(codes.AlreadyExists, "User already exists")
@@ -132,7 +131,7 @@ func (s *UsersService) GetUserByUsername(ctx context.Context, req *pbusers.GetUs
 
 	resp := &pbusers.GetUserByUsernameResponse{
 		Success: true,
-		User:    &pbcommon.User{
+		User: &pbcommon.User{
 			UserID:   int64(user.ID),
 			UserName: user.Username,
 			Email:    user.Email,
@@ -141,8 +140,8 @@ func (s *UsersService) GetUserByUsername(ctx context.Context, req *pbusers.GetUs
 				Month: int32(user.Birthday.Month()),
 				Day:   int32(user.Birthday.Day()),
 			},
-			City:	  user.City,
-			Bio:      user.Bio,
+			City: user.City,
+			Bio:  user.Bio,
 		},
 	}
 	return resp, err
@@ -160,7 +159,7 @@ func (s *UsersService) GetUserByID(ctx context.Context, req *pbusers.GetUserByID
 
 	resp := &pbusers.GetUserByIDResponse{
 		Success: true,
-		User:    &pbcommon.User{
+		User: &pbcommon.User{
 			UserID:   int64(usr.ID),
 			UserName: usr.Username,
 			Email:    usr.Email,
@@ -169,8 +168,8 @@ func (s *UsersService) GetUserByID(ctx context.Context, req *pbusers.GetUserByID
 				Month: int32(usr.Birthday.Month()),
 				Day:   int32(usr.Birthday.Day()),
 			},
-			City:	  usr.City,
-			Bio:      usr.Bio,
+			City: usr.City,
+			Bio:  usr.Bio,
 		},
 	}
 
@@ -194,7 +193,7 @@ func (s *UsersService) GetUserNameByID(ctx context.Context, req *pbusers.GetUser
 }
 
 func (s *UsersService) DeleteUserByID(ctx context.Context, req *pbusers.DeleteUserByIDRequest) (*pbusers.DeleteUserByIDResponse, error) {
-	headers, ok :=  metadata.FromIncomingContext(ctx)
+	headers, ok := metadata.FromIncomingContext(ctx)
 
 	if !ok {
 		s.logger.Debugf("Failed to get headers from incoming call in DeleteUserByID")
@@ -245,9 +244,8 @@ func (s *UsersService) UpdateUserInfo(ctx context.Context, req *pbusers.UpdateUs
 	s.logger.Debugf("Starting UpdateUserInfo with req: %v", req)
 
 	var hashedPassword []byte // declaring hashedPassword to potentially be filled in
-	var err error // declaring err variable to hold potential errors
+	var err error             // declaring err variable to hold potential errors
 
-	// if
 	if req.DesiredPassword != "" { // if password change is requested
 		hashedPassword, err = bcrypt.GenerateFromPassword([]byte(req.DesiredPassword), bcrypt.DefaultCost) // hash the password
 	}
@@ -255,7 +253,7 @@ func (s *UsersService) UpdateUserInfo(ctx context.Context, req *pbusers.UpdateUs
 	// if error, log and return and failure
 	if err != nil {
 		s.logger.Errorf("Failed to hash password: %v", err)
-		return failureResponse, err
+		return failureResponse, status.Errorf(codes.InvalidArgument, "Password cannot be encrypted")
 	}
 
 	// create UserModel from updated fields
@@ -288,12 +286,11 @@ func (s *UsersService) UpdateUserInfo(ctx context.Context, req *pbusers.UpdateUs
 			Month: int32(usr.Birthday.Month()),
 			Day:   int32(usr.Birthday.Day()),
 		},
-		City:	  usr.City,
-		Bio:      usr.Bio,
+		City: usr.City,
+		Bio:  usr.Bio,
 	}}
 
 	// returning success response and nil error
 	return resp, nil
 
 }
-
