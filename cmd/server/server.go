@@ -9,10 +9,10 @@ import (
 	"os"
 	"os/signal"
 
+	authv3 "github.com/envoyproxy/go-control-plane/envoy/service/auth/v3"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gorm.io/driver/mysql"
-	authv3 "github.com/envoyproxy/go-control-plane/envoy/service/auth/v3"
 
 	"github.com/kic/users/internal/server"
 	"github.com/kic/users/pkg/logging"
@@ -44,13 +44,13 @@ func main() {
 	db, err := gorm.Open(mysql.Open(dbConnString), &gorm.Config{})
 
 	if err != nil {
-		logger.Fatalf("Unable connect to db %v",  err)
+		logger.Fatalf("Unable connect to db %v", err)
 	}
 
 	err = db.AutoMigrate(&database.UserModel{})
 
 	if err != nil {
-		logger.Fatalf("Unable migrate tables to db %v",  err)
+		logger.Fatalf("Unable migrate tables to db %v", err)
 	}
 
 	repo := database.NewSQLRepository(db, logger)
@@ -60,14 +60,12 @@ func main() {
 	pbusers.RegisterUsersServer(grpcServer, serv)
 	authv3.RegisterAuthorizationServer(grpcServer, serv)
 
-
 	go func() {
 		defer listener.Close()
 		if err := grpcServer.Serve(listener); err != nil {
 			logger.Fatalf("Failed to serve: %v", err)
 		}
 	}()
-
 
 	defer grpcServer.Stop()
 

@@ -9,10 +9,9 @@ import (
 type MockRepository struct {
 	db map[uint]*UserModel
 
-	logger *zap.SugaredLogger
+	logger    *zap.SugaredLogger
 	idCounter uint
 }
-
 
 func NewMockRepository(db map[uint]*UserModel, logger *zap.SugaredLogger) *MockRepository {
 	return &MockRepository{
@@ -22,7 +21,7 @@ func NewMockRepository(db map[uint]*UserModel, logger *zap.SugaredLogger) *MockR
 	}
 }
 
-func (m* MockRepository) AddUser(ctx context.Context, user *UserModel) (int64, error) {
+func (m *MockRepository) AddUser(ctx context.Context, user *UserModel) (int64, error) {
 	for _, val := range m.db {
 		if val.Username == user.Username || val.Email == user.Email {
 			return -1, errors.New("username or email taken")
@@ -34,7 +33,7 @@ func (m* MockRepository) AddUser(ctx context.Context, user *UserModel) (int64, e
 	return int64(user.ID), nil
 }
 
-func (m* MockRepository) GetUser(ctx context.Context, user *UserModel) (*UserModel, error) {
+func (m *MockRepository) GetUser(ctx context.Context, user *UserModel) (*UserModel, error) {
 	for _, val := range m.db {
 		if val.Username == user.Username || val.Email == user.Email {
 			return val, nil
@@ -43,14 +42,14 @@ func (m* MockRepository) GetUser(ctx context.Context, user *UserModel) (*UserMod
 	return nil, errors.New("user not found")
 }
 
-func (m* MockRepository) GetUserByID(ctx context.Context, id int64) (*UserModel, error) {
+func (m *MockRepository) GetUserByID(ctx context.Context, id int64) (*UserModel, error) {
 	if val, ok := m.db[uint(id)]; ok {
 		return val, nil
 	}
 	return nil, errors.New("user not found")
 }
 
-func (m* MockRepository) DeleteUserByID(ctx context.Context, id int64) error {
+func (m *MockRepository) DeleteUserByID(ctx context.Context, id int64) error {
 	if _, ok := m.db[uint(id)]; ok {
 		delete(m.db, uint(id))
 		return nil
@@ -58,12 +57,10 @@ func (m* MockRepository) DeleteUserByID(ctx context.Context, id int64) error {
 	return errors.New("user not found")
 }
 
-func (m* MockRepository) UpdateUserInfo(ctx context.Context, user *UserModel) error {
+func (m *MockRepository) UpdateUserInfo(ctx context.Context, user *UserModel) error {
 	if _, ok := m.db[user.ID]; !ok {
 		return errors.New("update user not found")
 	}
 	m.db[user.ID] = user
 	return nil
 }
-
-

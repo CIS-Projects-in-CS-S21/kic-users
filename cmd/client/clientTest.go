@@ -10,39 +10,37 @@ import (
 	"log"
 )
 
-func main() {
-	conn, err := grpc.Dial("test.api.keeping-it-casual.com:50051", grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("fail to dial: %v", err)
-	}
-	defer conn.Close()
-
-	client := pbusers.NewUsersClient(conn)
-
+func shouldAddUser(client pbusers.UsersClient) int64 {
 	in := &pbusers.AddUserRequest{
 		Email:           "qdn@gmail.com",
 		DesiredUsername: "qdnovinger",
 		DesiredPassword: "password134234",
-		Birthday:        &pbcommon.Date{
+		Birthday: &pbcommon.Date{
 			Year:  1998,
 			Month: 8,
 			Day:   21,
 		},
-		City:            "Scranton",
+		City: "Scranton",
 	}
 
 	addRes, err := client.AddUser(context.Background(), in)
-
-	fmt.Printf("res: %v\nerr: %v\n", addRes, err)
 
 	if err != nil {
 		log.Fatalf("fail to add user: %v", err)
 	}
 
-	addRes2, err := client.AddUser(context.Background(), in)
+	_, err = client.AddUser(context.Background(), in)
 
-	fmt.Printf("res: %v\nerr: %v\n", addRes2, err)
+	if err == nil {
+		log.Fatalf("should fail to add duplicate user")
+	}
 
+	log.Printf("shouldAddUser Success")
+
+	return addRes.CreatedUser.UserID
+}
+
+func shouldGetToken(client pbusers.UsersClient) string {
 	tokRes, err := client.GetJWTToken(context.Background(), &pbusers.GetJWTTokenRequest{
 		Username: "qdnovinger",
 		Password: "password134234",
@@ -52,20 +50,27 @@ func main() {
 		log.Fatalf("fail to get token: %v", err)
 	}
 
-	fmt.Printf("tokRes: %v\n", tokRes)
+	log.Printf("shouldGetToken Success")
 
-	md := metadata.Pairs("Authorization", fmt.Sprintf("Bearer %v", tokRes.Token))
-	ctx := metadata.NewOutgoingContext(context.Background(), md)
+	return tokRes.Token
+}
 
+func shouldGetUser(ctx context.Context, client pbusers.UsersClient) {
 	usernameRes, err := client.GetUserByUsername(ctx, &pbusers.GetUserByUsernameRequest{Username: "qdnovinger"})
 
+	if err != nil {
+		log.Fatalf("fail to get user by name: %v", err)
+	}
 
-	fmt.Printf("res: %v\nerr: %v\n", usernameRes, err)
+	if usernameRes.User.Email != "qdn@gmail.com" || usernameRes.User.UserName != "qdnovinger" {
+		log.Fatalf("got incorrect user with username")
+	}
 
-	md = metadata.Pairs("Authorization", fmt.Sprintf("Bearer %v", tokRes.Token))
-	ctx = metadata.NewOutgoingContext(context.Background(), md)
+	log.Printf("shouldGetUser Success")
+}
 
-	unameByIDRes, err := client.GetUserNameByID(ctx, &pbusers.GetUserNameByIDRequest{UserID: addRes.CreatedUser.UserID})
+func shouldGetUserByID(ctx context.Context, client pbusers.UsersClient, uid int64) {
+	unameByIDRes, err := client.GetUserNameByID(ctx, &pbusers.GetUserNameByIDRequest{UserID: uid})
 
 	if err != nil {
 		log.Fatalf("fail to get username by id: %v", err)
@@ -75,27 +80,12 @@ func main() {
 		log.Fatalf("Incorrect response from GetUserNameByID: %v", unameByIDRes.Username)
 	}
 
-	md = metadata.Pairs("Authorization", fmt.Sprintf("Bearer %v", tokRes.Token))
-	ctx = metadata.NewOutgoingContext(context.Background(), md)
+	log.Printf("shouldGetUserByID Success")
+}
 
-	userByIDRes, err := client.GetUserByID(ctx,&pbusers.GetUserByIDRequest{UserID: addRes.CreatedUser.UserID} )
-
-	if err != nil {
-		log.Fatalf("fail to get user by id: %v", err)
-	}
-
-	if userByIDRes.Success != true || userByIDRes.User.UserName != "qdnovinger" || userByIDRes.User.UserID != addRes.CreatedUser.UserID {
-		log.Fatalf("Incorrect response from GetUserByID: %v", unameByIDRes.Username)
-	}
-
-
-	// testing UpdateUser() -------------------------------------
-
-	md = metadata.Pairs("Authorization", fmt.Sprintf("Bearer %v", tokRes.Token))
-	ctx = metadata.NewOutgoingContext(context.Background(), md)
-
+func shouldUpdateUser(ctx context.Context, client pbusers.UsersClient, uid int64) {
 	updateReq := &pbusers.UpdateUserInfoRequest{
-		UserID:          addRes.CreatedUser.UserID,
+		UserID:          uid,
 		Email:           "",
 		DesiredUsername: "hot_mama_RAWR_XD",
 		DesiredPassword: "",
@@ -104,38 +94,53 @@ func main() {
 		Bio:             "Hey guys I am Ryan",
 	}
 
-	updateRes, err := client.UpdateUserInfo(ctx, updateReq)
-
-	fmt.Printf("Update res: %v\nerr: %v\n", updateRes, err)
+	_, err := client.UpdateUserInfo(ctx, updateReq)
 
 	if err != nil {
 		log.Fatalf("fail to update user: %v", err)
 	}
 
+	usernameRes, err := client.GetUserByUsername(ctx, &pbusers.GetUserByUsernameRequest{Username: "hot_mama_RAWR_XD"})
 
-	// ---------------------------------------------------------
+	if err != nil || usernameRes.User.UserName != "hot_mama_RAWR_XD" || usernameRes.User.UserID != uid {
+		log.Fatalf("fail to update user: %v", err)
+	}
 
-	// Getting user again
+	log.Printf("shouldUpdateUser Success")
+}
 
-	md = metadata.Pairs("Authorization", fmt.Sprintf("Bearer %v", tokRes.Token))
-	ctx = metadata.NewOutgoingContext(context.Background(), md)
-
-	usernameRes, err = client.GetUserByUsername(ctx, &pbusers.GetUserByUsernameRequest{Username: "hot_mama_RAWR_XD"})
-
-
-	fmt.Printf("Get res: %v\nerr: %v\n", usernameRes, err)
-
-	// -------------------------
-
-	md = metadata.Pairs("Authorization", fmt.Sprintf("Bearer %v", tokRes.Token))
-	ctx = metadata.NewOutgoingContext(context.Background(), md)
-
-	deleteRes, err := client.DeleteUserByID(ctx, &pbusers.DeleteUserByIDRequest{UserID: addRes.CreatedUser.UserID})
+func shouldDeleteUser(ctx context.Context, client pbusers.UsersClient, uid int64) {
+	deleteRes, err := client.DeleteUserByID(ctx, &pbusers.DeleteUserByIDRequest{UserID: uid})
 
 	if err != nil {
 		log.Fatalf("fail to delete user: %v", err)
 	}
 
-	fmt.Printf("deleteRes: %v\n", deleteRes)
+	if deleteRes.Success != true {
+		log.Fatalf("fail to delete user")
+	}
+
+	log.Printf("shouldDeleteUser Success")
+}
+
+func main() {
+	conn, err := grpc.Dial("test.api.keeping-it-casual.com:50051", grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("fail to dial: %v", err)
+	}
+	defer conn.Close()
+
+	client := pbusers.NewUsersClient(conn)
+
+	uid := shouldAddUser(client)
+	token := shouldGetToken(client)
+
+	md := metadata.Pairs("Authorization", fmt.Sprintf("Bearer %v", token))
+	ctx := metadata.NewOutgoingContext(context.Background(), md)
+
+	shouldGetUser(ctx, client)
+	shouldGetUserByID(ctx, client, uid)
+	shouldUpdateUser(ctx, client, uid)
+	shouldDeleteUser(ctx, client, uid)
 
 }
