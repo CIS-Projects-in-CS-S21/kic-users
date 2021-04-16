@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"errors"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -64,7 +65,7 @@ func (s *SQLRepository) AddUser(ctx context.Context, user *UserModel) (int64, er
 
 	s.logger.Debugf("Did not insert record %v", user)
 
-	return -1, nil
+	return -1, errors.New("username or email taken")
 }
 
 func (s *SQLRepository) GetUser(ctx context.Context, user *UserModel) (*UserModel, error) {

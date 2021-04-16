@@ -12,8 +12,8 @@
 package proto
 
 import (
-	common "github.com/kic/users/pkg/proto/common"
 	_ "github.com/golang/protobuf/ptypes/timestamp"
+	common "github.com/kic/users/pkg/proto/common"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
