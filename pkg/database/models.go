@@ -14,9 +14,18 @@ type UserModel struct {
 	Birthday time.Time
 	City     string
 	Bio      string
+	Triggers string
+	Private  string
 }
 
-func NewUserModel(username, email, password, city, bio string, birthday *pbcommon.Date) *UserModel {
+func NewUserModel(
+	username, email,
+	password, city,
+	bio string,
+	birthday *pbcommon.Date,
+	triggers string,
+	private string,
+) *UserModel {
 	var bday time.Time
 	if birthday != nil {
 		bday = time.Date(int(birthday.Year), time.Month(birthday.Month), int(birthday.Day), 0, 0, 0, 0, time.Local)
@@ -28,5 +37,7 @@ func NewUserModel(username, email, password, city, bio string, birthday *pbcommo
 		Birthday: bday,
 		City:     city,
 		Bio:      bio,
+		Triggers: triggers,
+		Private:  private,
 	}
 }

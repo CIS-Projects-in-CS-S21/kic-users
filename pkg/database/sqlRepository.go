@@ -159,5 +159,18 @@ func (s *SQLRepository) UpdateUserInfo(ctx context.Context, user *UserModel) err
 		}
 	}
 
+	if user.Triggers != "" {
+		tx = s.db.Model(&UserModel{}).Where("id = ?", user.ID).Update("Triggers", user.Triggers)
+		if tx.Error != nil { // return error if there is one
+			return tx.Error
+		}
+	}
+	if user.Private != "" {
+		tx = s.db.Model(&UserModel{}).Where("id = ?", user.ID).Update("Private", user.Private)
+		if tx.Error != nil { // return error if there is one
+			return tx.Error
+		}
+	}
+
 	return nil
 }

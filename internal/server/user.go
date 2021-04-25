@@ -89,7 +89,16 @@ func (s *UsersService) AddUser(ctx context.Context, req *pbusers.AddUserRequest)
 		return nil, err
 	}
 
-	model := database.NewUserModel(req.DesiredUsername, req.Email, string(hashedPassword), req.City, "", req.Birthday)
+	model := database.NewUserModel(
+		req.DesiredUsername,
+		req.Email,
+		string(hashedPassword),
+		req.City,
+		"",
+		req.Birthday,
+		req.Triggers,
+		req.IsPrivate,
+	)
 
 	id, err := s.db.AddUser(context.TODO(), model)
 
@@ -100,6 +109,15 @@ func (s *UsersService) AddUser(ctx context.Context, req *pbusers.AddUserRequest)
 				UserID:   id,
 				UserName: model.Username,
 				Email:    model.Email,
+				Birthday: &pbcommon.Date{
+					Year:  int32(model.Birthday.Year()),
+					Month: int32(model.Birthday.Month()),
+					Day:   int32(model.Birthday.Day()),
+				},
+				City: model.City,
+				Bio:  model.Bio,
+				Triggers: model.Triggers,
+				IsPrivate: model.Private,
 			},
 		}, err
 	}
@@ -142,6 +160,8 @@ func (s *UsersService) GetUserByUsername(ctx context.Context, req *pbusers.GetUs
 			},
 			City: user.City,
 			Bio:  user.Bio,
+			Triggers: user.Triggers,
+			IsPrivate: user.Private,
 		},
 	}
 	return resp, err
@@ -170,6 +190,8 @@ func (s *UsersService) GetUserByID(ctx context.Context, req *pbusers.GetUserByID
 			},
 			City: usr.City,
 			Bio:  usr.Bio,
+			Triggers: usr.Triggers,
+			IsPrivate: usr.Private,
 		},
 	}
 
@@ -257,7 +279,16 @@ func (s *UsersService) UpdateUserInfo(ctx context.Context, req *pbusers.UpdateUs
 	}
 
 	// create UserModel from updated fields
-	model := database.NewUserModel(req.DesiredUsername, req.Email, string(hashedPassword), req.City, req.Bio, req.Birthday)
+	model := database.NewUserModel(
+		req.DesiredUsername,
+		req.Email,
+		string(hashedPassword),
+		req.City,
+		req.Bio,
+		req.Birthday,
+		req.Triggers,
+		req.IsPrivate,
+	)
 
 	model.ID = uint(req.UserID)
 
@@ -272,7 +303,6 @@ func (s *UsersService) UpdateUserInfo(ctx context.Context, req *pbusers.UpdateUs
 		return failureResponse, err
 	}
 
-	s.logger.Debug("Finished updating info in db, returning")
 
 	usr, _ := s.db.GetUserByID(context.TODO(), req.GetUserID())
 
@@ -288,7 +318,11 @@ func (s *UsersService) UpdateUserInfo(ctx context.Context, req *pbusers.UpdateUs
 		},
 		City: usr.City,
 		Bio:  usr.Bio,
+		Triggers: usr.Triggers,
+		IsPrivate: usr.Private,
 	}}
+
+	s.logger.Debugf("Finished updating info in db, returning: %v", resp)
 
 	// returning success response and nil error
 	return resp, nil
