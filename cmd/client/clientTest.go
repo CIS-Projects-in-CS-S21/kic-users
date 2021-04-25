@@ -92,6 +92,8 @@ func shouldUpdateUser(ctx context.Context, client pbusers.UsersClient, uid int64
 		Birthday:        nil,
 		City:            "Philadelphia",
 		Bio:             "Hey guys I am Ryan",
+		Triggers:        "stuff",
+		IsPrivate:       "1",
 	}
 
 	_, err := client.UpdateUserInfo(ctx, updateReq)
@@ -102,8 +104,11 @@ func shouldUpdateUser(ctx context.Context, client pbusers.UsersClient, uid int64
 
 	usernameRes, err := client.GetUserByUsername(ctx, &pbusers.GetUserByUsernameRequest{Username: "hot_mama_RAWR_XD"})
 
-	if err != nil || usernameRes.User.UserName != "hot_mama_RAWR_XD" || usernameRes.User.UserID != uid {
-		log.Fatalf("fail to update user: %v", err)
+	if err != nil || usernameRes.User.UserName != "hot_mama_RAWR_XD" ||
+		usernameRes.User.UserID != uid ||
+		usernameRes.User.IsPrivate != "1" ||
+		usernameRes.User.Triggers != "stuff" {
+		log.Fatalf("fail to update user: %v", usernameRes.User)
 	}
 
 	log.Printf("shouldUpdateUser Success")
